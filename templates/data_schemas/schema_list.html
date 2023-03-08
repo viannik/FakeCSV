@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}
+
+{% endblock %}
+{% block content %}
+    <div class="container d-flex justify-content-between align-items-center py-3">
+        <h1>Data Schemas</h1>
+        <a href="{% url 'schema_new' %}" class="btn btn-primary">New Schema</a>
+    </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Modified</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for schema in schemas %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ schema.name }}</td>
+                <td>{{ schema.modified_date }}</td>
+                <td>
+                    <a class="btn btn-info btn-sm" href="{% url 'schema_datasets' schema.pk %}">Create Dataset</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'schema_edit' schema.pk %}">Edit</a>
+                    <a class="btn btn-danger btn-sm" href="{% url 'schema_delete' schema.pk %}">Delete</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

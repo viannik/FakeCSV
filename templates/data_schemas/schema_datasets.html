@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container d-flex justify-content-between align-items-center py-3">
+        <h1>Sample schema</h1>
+        <a class="btn btn-primary" href="{% url 'schema_edit' schema.pk %}">Edit schema</a>
+    </div>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Column name</th>
+            <th>Column type</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for column in columns %}
+            <tr>
+                <td>{{ column.name }}</td>
+                <td>{{ column.column_type }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="container d-flex justify-content-between align-items-center py-3">
+        <h1>Data sets</h1>
+        <form class="d-flex" method="POST">
+            {% csrf_token %}
+            <div class="input-group">
+                <label class="input-group-text" for="rows-input">Rows</label>
+                {{ form.rows }}
+            </div>
+            <button class="btn btn-success ms-3 gen-data" type="submit">Generate data</button>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Created</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="files_table">
+        {% for dataset in datasets %}
+            <tr>
+                <td>{{ dataset.created_date }}</td>
+                <td><span class="badge bg-success">Ready</span></td>
+                <td>
+                    <a href="{% url 'dataset_download' pk=schema.pk dataset_pk=dataset.pk %}" class="btn btn-primary">Download</a>
+                    <a href="{% url 'dataset_delete' pk=schema.pk dataset_pk=dataset.pk %}" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
+{% block scripts %}
+    <script>
+        $(document).on('submit', 'form', function () {
+            // Add new row to the table with "Pending" status
+            var date = new Date().toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
+            var newRow = '<tr><td>' + date + '</td><td><span class="badge bg-secondary">Pending</span></td></tr>';
+            $('#files_table').append(newRow);
+
+            {#// Send AJAX request to generate CSV file#}
+            {#$.ajax({#}
+            {#    url: '{% url 'schema_datasets' schema.pk %}',#}
+            {#    async: true,#}
+            {#    data: $('form').serialize(),#}
+            {##}
+            {#    success: function (response) {#}
+            {#        console.log('test');#}
+            {#        // Response received successfully#}
+            {#        // Find the last row in the table and update the status to "Ready"#}
+            {#        $('#files_table tr:last-child td:last-child').text('Ready');#}
+            {#        console.log('File is ready');#}
+            {#    },#}
+            {#    error: function (error) {#}
+            {#        // Error occurred while sending request#}
+            {#        console.error(error);#}
+            {#    }#}
+            {# });#}
+        });
+    </script>
+{% endblock scripts %}

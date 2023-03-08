@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <form method="POST">
+        <div class="container d-flex justify-content-between align-items-center py-3">
+            <h2>{{ header }}</h2>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group col-md-4 mb-0">
+                {{ schema_form.name|as_crispy_field }}
+            </div>
+            <div class="form-group col-md-4 mb-0">
+                {{ schema_form.column_separator|as_crispy_field }}
+            </div>
+            <div class="form-group col-md-4 mb-0">
+                {{ schema_form.string_character|as_crispy_field }}
+            </div>
+        </div>
+        <hr>
+        <h3>Schema Columns</h3>
+        {{ formset.management_form }}
+        <div id="form_set">
+            <table class="table no_error" id="columns-table">
+                {% for form in formset.forms %}
+                    {{ form.id }}
+                    {{ form.non_field_errors }}
+                    {{ form.errors }}
+                    <tr class="formset-row no_error">
+                        <td>{{ form.name|as_crispy_field }}</td>
+                        <td>{{ form.column_type|as_crispy_field }}</td>
+                        <td class="from_int d-none">{{ form.from_int|as_crispy_field }}</td>
+                        <td class="to_int d-none">{{ form.to_int|as_crispy_field }}</td>
+                        <td>{{ form.column_order|as_crispy_field }}</td>
+                        <td style="vertical-align: middle">
+                            <button type="button" class="btn btn-danger remove-form-row">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="form-group text-center">
+            <button type="button" class="btn btn-success" id="add_more">Add column</button>
+        </div>
+        <div id="empty_form" style="display:none">
+            <table class='table no_error'>
+                <tr class="formset-row no_error">
+                    <td>{{ formset.empty_form.name|as_crispy_field }}</td>
+                    <td>{{ formset.empty_form.column_type|as_crispy_field }}</td>
+                    <td class="from_int d-none">{{ formset.empty_form.from_int|as_crispy_field }}</td>
+                    <td class="to_int d-none">{{ formset.empty_form.to_int|as_crispy_field }}</td>
+                    <td>{{ formset.empty_form.column_order|as_crispy_field }}</td>
+                    <td style="vertical-align: middle">
+                        <button type="button" class="btn btn-danger remove-form-row">Delete</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <hr>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // Toggle visibility of "from_int" and "to_int" fields if column_type = "Integer"
+        function type_changed(select) {
+            var row = $(select).closest("tr");
+            var value = $(select).val();
+            console.log(value);
+            if (value == "Integer" || value == "Text") {
+                row.find(".from_int").removeClass("d-none");
+                row.find(".to_int").removeClass("d-none");
+            } else {
+                row.find(".from_int").addClass("d-none");
+                row.find(".to_int").addClass("d-none");
+            }
+        }
+
+        $(document).ready(function () {
+            // Add new row to columns table
+            $('#add_more').click(function () {
+                console.log(form_idx);
+                var form_idx = $('#id_column_set-TOTAL_FORMS').val();
+                $('#form_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+                $('#id_column_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+                console.log($('#id_column_set-TOTAL_FORMS').val());
+            });
+
+            // Remove row from columns table
+            $('#form_set').on('click', '.remove-form-row', function () {
+                var totalForms = parseInt($('#id_column_set-TOTAL_FORMS').val());
+                if (totalForms > 1) {
+                    $(this).closest('tr').remove();
+                    $('#id_column_set-TOTAL_FORMS').val(totalForms - 1);
+                } else {
+                    alert("Cannot delete last row.");
+                }
+            });
+        });
+    </script>
+
+{% endblock %}
